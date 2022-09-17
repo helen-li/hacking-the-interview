@@ -1,5 +1,6 @@
 import requests
 filler_words = ["um", "uh", "hmm", "mhm", "uh huh", "ahh", "like", "you know"]
+mysp = __import__("my-voice-analysis") # need to pip install my-voice-analysis
 
 from flask import Flask
 import datetime
@@ -32,6 +33,11 @@ def home():
 def get_analysis(): 
    return assembly_analysis(get_url('7510.wav'))
 
+
+@app.route('/voice')
+def get_voice_analysis(): 
+   return voice_analysis(get_url('7510.wav'))
+
 def assembly_analysis(url):
     req_endpoint = "https://api.assemblyai.com/v2/transcript"
     
@@ -63,3 +69,8 @@ def assembly_analysis(url):
     sentiment = check_response.json()['sentiment_analysis_results']
     #print(check_response.json())
     return [text, sentiment]
+
+def voice_analysis(filename):
+    p=filename # Audio File title, should be filename
+    c=r"/audio/" # Path to the audio directory
+    return [mysp.mysppron(p,c), mysp.mysptotal(p,c)]

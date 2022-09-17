@@ -1,36 +1,22 @@
-import logo from './logo.svg';
 import './App.css';
-import React, { useState, useEffect } from 'react';
-
-// function App() {
-//   return (
-//     <div className="App">
-//       <header className="App-header">
-//         <img src={logo} className="App-logo" alt="logo" />
-//         <p>
-//           Edit <code>src/App.js</code> and save to reload.
-//         </p>
-//         <a
-//           className="App-link"
-//           href="https://reactjs.org"
-//           target="_blank"
-//           rel="noopener noreferrer"
-//         >
-//           Learn React
-//         </a>
-//       </header>
-//     </div>
-//   );
-// }
+import React, { useState } from 'react';
+import axios from "axios";
 
 function App() {
-  const [currentTime, setCurrentTime] = useState(0);
+  const [currentTime, setCurrentTime] = useState('');
 
-  useEffect(() => {
-    fetch('/time').then(res => res.json()).then(data => {
-      setCurrentTime(data.time);
-    });
-  }, []);
+  // const axios = require('axios');
+  axios.get('/analyze', { 
+    params: { 
+      filename: '7510.wav' 
+    } 
+  })
+  .then((response) => {
+    console.log(response.data[0]);
+    setCurrentTime(response.data[0]);
+  }).catch(error => {
+    console.log(error);
+  });
 
   return (
     <div className="App">

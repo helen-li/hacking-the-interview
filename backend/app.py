@@ -1,9 +1,25 @@
 import requests
 filler_words = ["um", "uh", "hmm", "mhm", "uh huh", "ahh", "like", "you know"]
 
-from flask import Flask
+import flask
 import datetime
-app = Flask(__name__)
+app = flask.Flask(__name__)
+
+@app.route('/analyze', methods=['GET'])
+def get_analysis(): 
+    filename = flask.request.args.get('filename')
+    return flask.jsonify(assembly_analysis(get_url(filename)))
+
+@app.route('/amplitude_graph', methods=['GET'])
+def graph_amplitude():
+    filename = flask.request.args.get('filename')
+    return graph_amplitude(filename)
+
+@app.route('/loudness', methods=['GET'])
+def loudness():
+    filename = flask.request.args.get('filename')
+    loudness = loudness_unit(filename)
+    return flask.jsonify({'loudness': loudness})
 
 def read_file(filename, chunk_size=5242880):
     with open(filename, 'rb') as _file:
@@ -19,18 +35,6 @@ def get_url(filename):
                         headers=headers,
                         data=read_file(filename))
     return response.json()['upload_url']
-
-@app.route('/time')
-def get_current_time():
-    return {'time': datetime.datetime.now()}
-
-@app.route("/")
-def home():
-    return "Hello, Flask!"
-
-@app.route('/analyze')
-def get_analysis(): 
-   return assembly_analysis(get_url('7510.wav'))
 
 def assembly_analysis(url):
     req_endpoint = "https://api.assemblyai.com/v2/transcript"
@@ -63,3 +67,32 @@ def assembly_analysis(url):
     sentiment = check_response.json()['sentiment_analysis_results']
     #print(check_response.json())
     return [text, sentiment]
+
+from scipy.io.wavfile import read
+import matplotlib.pyplot as plt
+import numpy as np
+
+def graph_amplitude(file_path): 
+    samplerate, data = read(file_path)
+    # samplerate #echo samplerate
+    # data #echo data -> note that the data is a single dimensional array
+    duration = len(data)/samplerate
+    time = np.arange(0,duration,1/samplerate) #time vector
+    
+    plt.plot(time,data)
+    plt.xlabel('Time [s]')
+    plt.ylabel('Amplitude')
+    plt.title('7510.wav')
+    plt.show()
+
+import soundfile as sf
+import pyloudnorm as pyln
+
+def loudness_unit(file_path): 
+    data, rate = sf.read(file_path)
+    meter = pyln.Meter(rate) 
+    # Loudness Unit Full Scale 
+    # The less negative the value, the higher the average level.
+    # -9 to -13 is the ideal range
+    loudness = meter.integrated_loudness(data)
+    return loudness

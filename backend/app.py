@@ -1,5 +1,6 @@
 import requests
 filler_words = ["um", "uh", "hmm", "mhm", "uh huh", "ahh", "like", "you know"]
+mysp = __import__("my-voice-analysis") # need to pip install my-voice-analysis
 
 import flask
 import datetime
@@ -20,6 +21,10 @@ def loudness():
     filename = flask.request.args.get('filename')
     loudness = loudness_unit(filename)
     return flask.jsonify({'loudness': loudness})
+
+@app.route('/voice')
+def get_voice_analysis(): 
+   return voice_analysis(get_url('7510.wav'))
 
 def read_file(filename, chunk_size=5242880):
     with open(filename, 'rb') as _file:
@@ -96,3 +101,8 @@ def loudness_unit(file_path):
     # -9 to -13 is the ideal range
     loudness = meter.integrated_loudness(data)
     return loudness
+
+def voice_analysis(filename):
+    p=filename # Audio File title, should be filename
+    c=r"/audio/" # Path to the audio directory
+    return [mysp.mysppron(p,c), mysp.mysptotal(p,c)]

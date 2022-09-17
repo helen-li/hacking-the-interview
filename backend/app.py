@@ -1,9 +1,10 @@
 import requests
 filler_words = ["um", "uh", "hmm", "mhm", "uh huh", "ahh", "like", "you know"]
-mysp = __import__("my-voice-analysis") # need to pip install my-voice-analysis
 
+import myspsolution as mysp # need to pip install my-voice-analysis
+# mysp = __import__("my-voice-analysis") # need to pip install my-voice-analysis
 import flask
-import datetime
+
 app = flask.Flask(__name__)
 
 @app.route('/analyze', methods=['GET'])
@@ -106,3 +107,12 @@ def voice_analysis(filename):
     p=filename # Audio File title, should be filename
     c=r"/audio/" # Path to the audio directory
     return [mysp.mysppron(p,c), mysp.mysptotal(p,c)]
+
+def count_filler(result):
+    filler_count = 0
+    for word in filler_words:
+        if word in result:
+            filler_count += 1
+    return filler_count
+
+# count_filler(result[0])

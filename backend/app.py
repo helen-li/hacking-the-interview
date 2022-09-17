@@ -1,15 +1,10 @@
 import requests
 filler_words = ["um", "uh", "hmm", "mhm", "uh huh", "ahh", "like", "you know"]
-<<<<<<< HEAD
+
 import myspsolution as mysp # need to pip install my-voice-analysis
 # mysp = __import__("my-voice-analysis") # need to pip install my-voice-analysis
-from flask import Flask
-=======
-mysp = __import__("my-voice-analysis") # need to pip install my-voice-analysis
-
 import flask
->>>>>>> 7c94c4ccb48707427ffd2149382c8659a2ed4341
-import datetime
+
 app = flask.Flask(__name__)
 
 @app.route('/analyze', methods=['GET'])

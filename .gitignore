@@ -1,0 +1,5 @@
+backend/.flaskenv
+backend/.ipynb_checkpoints/
+backend/__pycache__/
+backend/venv/
+frontend/package-lock.json 

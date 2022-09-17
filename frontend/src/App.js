@@ -5,10 +5,9 @@ import axios from "axios";
 function App() {
   const [currentTime, setCurrentTime] = useState('');
 
-  // const axios = require('axios');
   axios.get('/analyze', { 
     params: { 
-      filename: '7510.wav' 
+      filename: "audio/7510.wav" 
     } 
   })
   .then((response) => {

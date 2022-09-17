@@ -23,9 +23,11 @@ def loudness():
     loudness = loudness_unit(filename)
     return flask.jsonify({'loudness': loudness})
 
-@app.route('/voice')
+@app.route('/voice', methods=['GET'])
 def get_voice_analysis(): 
-   return voice_analysis(get_url('7510.wav'))
+    # only need the name, not the .wav ending here
+    filename = flask.request.args.get('filename')
+    return voice_analysis(filename)
 
 def read_file(filename, chunk_size=5242880):
     with open(filename, 'rb') as _file:
@@ -88,7 +90,7 @@ def graph_amplitude(file_path):
     plt.plot(time,data)
     plt.xlabel('Time [s]')
     plt.ylabel('Amplitude')
-    plt.title('7510.wav')
+    plt.title(file_path)
     plt.show()
 
 import soundfile as sf
@@ -105,7 +107,7 @@ def loudness_unit(file_path):
 
 def voice_analysis(filename):
     p=filename # Audio File title, should be filename
-    c=r"/audio/" # Path to the audio directory
+    c="/Users/helenli/Desktop/Coding/hacking-the-interview/backend/audio/" # Path to the audio directory
     return [mysp.mysppron(p,c), mysp.mysptotal(p,c)]
 
 def count_filler(result):

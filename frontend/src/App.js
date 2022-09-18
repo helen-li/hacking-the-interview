@@ -47,13 +47,18 @@ const countFiller = (str) => {
 }
 
 const calcAverage = (lst) => {
-  let sum = 0;
-  let count = 0;
+  let sums = [0, 0, 0];  // positive, neutral, negative
+  let counts = [0, 0, 0]; 
   lst.forEach((entry) => {
-    sum = sum + entry["confidence"];
-    count = count + 1;
+    let index = 1;
+    if(entry["sentiment"] == "POSITIVE")
+      index = 0;
+    else if(entry["sentiment"] == "NEGATIVE")
+      index = 2;
+    sums[index] = sums[index] + entry["confidence"];
+    counts[index] = counts[index] + 1;
   })
-  return sum / count;
+  return [sums[0] / counts[0], sums[1] / counts[1], sums[2] / counts[2]];
 }
 
 const calcLoudPercent = (x) => {
@@ -80,7 +85,9 @@ const calcLoudPercent = (x) => {
 function App() {
   const [loudness, setLoudness] = useState(-100);
   const [pronounce, setPronounce] = useState(0);
-  const [sentiment, setSentiment] = useState(0.0);
+  const [posSentiment, setPosSentiment] = useState(0.0);
+  const [negSentiment, setNegSentiment] = useState(0.0);
+  const [neuSentiment, setNeuSentiment] = useState(0.0);
   const [text, setText] = useState("");
   const [balance, setBalance] = useState(0.0);
   const [speed, setSpeed] = useState(-1);
@@ -99,7 +106,10 @@ function App() {
         let index = response.data["pronounce"].indexOf(":");
         setPronounce(response.data["pronounce"].substring(index + 1));
         setText(response.data["text"]);
-        setSentiment(calcAverage(response.data["sentiment"]));
+        const sentiments = calcAverage(response.data["sentiment"]);
+        setPosSentiment(sentiments[0]);
+        setNeuSentiment(sentiments[1]);
+        setNegSentiment(sentiments[2]);
         setBalance(parseFloat(response.data["metric_table"]["balance"]["0"]));
         setSpeed(parseInt(response.data["metric_table"]["articulation_rate"]["0"]));
         setPauses(parseInt(response.data["metric_table"]["number_of_pauses"]["0"]));
@@ -179,13 +189,17 @@ function App() {
             Volume
             <Progress percent={calcLoudPercent(-1 * loudness)} />
             Filler Words
-            <Progress percent={countFiller(text) / (text.split(" ").length)} />
+            <Progress percent={(countFiller(text) / (text.split(" ").length))*100} />
             Speech Balance
             <Progress percent={balance * 100} />
             Pronounciation
             <Progress percent={pronounce} />
-            Content Sentiment
-            <Progress percent={sentiment * 100} />
+            Content Positive Sentiment
+            <Progress percent={posSentiment * 100} />
+            Content Neutral Sentiment
+            <Progress percent={neuSentiment * 100} />
+            Content Negative Sentiment
+            <Progress percent={negSentiment * 100} />
           </div>
         </Space>
         <Divider />

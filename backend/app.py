@@ -1,8 +1,6 @@
 import requests
-# filler_words = ["um", "uh", "hmm", "mhm", "uh huh", "ahh", "like", "you know"]
 
 import myspsolution as mysp # need to pip install my-voice-analysis
-# mysp = __import__("my-voice-analysis") # need to pip install my-voice-analysis
 import flask
 
 app = flask.Flask(__name__)
@@ -10,24 +8,18 @@ app = flask.Flask(__name__)
 @app.route('/analyze', methods=['GET'])
 def get_analysis(): 
     filename = flask.request.args.get('filename')
-    return flask.jsonify(assembly_analysis(get_url(filename)))
-
-@app.route('/amplitude_graph', methods=['GET'])
-def graph_amplitude():
-    filename = flask.request.args.get('filename')
-    return graph_amplitude(filename)
-
-@app.route('/loudness', methods=['GET'])
-def loudness():
-    filename = flask.request.args.get('filename')
+    # filename = "audio/7510.wav"
     loudness = loudness_unit(filename)
-    return [loudness]
-
-@app.route('/voice', methods=['GET'])
-def get_voice_analysis(): 
-    # only need the name, not the .wav ending here
-    filename = flask.request.args.get('filename')
-    return voice_analysis(filename)
+    graph_amplitude(filename)
+    text, sentiment = assembly_analysis(get_url(filename))
+    pronounce, metric_table = voice_analysis(filename[6:len(filename) - 4]) # only need the name, not the .wav ending here
+    return {
+        "loudness": loudness,
+        "text": text,
+        "sentiment": sentiment,
+        "pronounce": pronounce,
+        "metric_table": metric_table
+    }
 
 def read_file(filename, chunk_size=5242880):
     with open(filename, 'rb') as _file:
@@ -89,7 +81,7 @@ def graph_amplitude(file_path):
     duration = len(data)/samplerate
     time = np.arange(0,duration,1/samplerate) #time vector
     
-    plt.plot(time,data)
+    plt.plot(time,data, 'b')
     plt.xlabel('Time [s]')
     plt.ylabel('Amplitude')
     plt.title(file_path)
@@ -113,12 +105,5 @@ def voice_analysis(filename):
     c="/Users/helenli/Desktop/Coding/hacking-the-interview/backend/audio/" # Path to the audio directory
     return [mysp.mysppron(p,c), mysp.mysptotal(p,c)]
 
-# def count_filler(result):
-#     filler_count = 0
-#     for word in filler_words:
-#         if word in result:
-#             filler_count += 1
-#     return filler_count
-
-if __name__ == '__main__':
-    graph_amplitude('audio/7510.wav')
+# if __name__ == '__main__':
+#     graph_amplitude('audio/7510.wav')

@@ -1,5 +1,5 @@
 import requests
-filler_words = ["um", "uh", "hmm", "mhm", "uh huh", "ahh", "like", "you know"]
+# filler_words = ["um", "uh", "hmm", "mhm", "uh huh", "ahh", "like", "you know"]
 
 import myspsolution as mysp # need to pip install my-voice-analysis
 # mysp = __import__("my-voice-analysis") # need to pip install my-voice-analysis
@@ -21,7 +21,7 @@ def graph_amplitude():
 def loudness():
     filename = flask.request.args.get('filename')
     loudness = loudness_unit(filename)
-    return flask.jsonify({'loudness': loudness})
+    return [loudness]
 
 @app.route('/voice', methods=['GET'])
 def get_voice_analysis(): 
@@ -80,6 +80,8 @@ from scipy.io.wavfile import read
 import matplotlib.pyplot as plt
 import numpy as np
 
+plt.switch_backend('Agg') 
+
 def graph_amplitude(file_path): 
     samplerate, data = read(file_path)
     # samplerate #echo samplerate
@@ -91,7 +93,8 @@ def graph_amplitude(file_path):
     plt.xlabel('Time [s]')
     plt.ylabel('Amplitude')
     plt.title(file_path)
-    plt.show()
+    plt.savefig(f"../frontend/src/imgs/{file_path[6:]}.png")
+    return "Done!"
 
 import soundfile as sf
 import pyloudnorm as pyln
@@ -110,11 +113,12 @@ def voice_analysis(filename):
     c="/Users/helenli/Desktop/Coding/hacking-the-interview/backend/audio/" # Path to the audio directory
     return [mysp.mysppron(p,c), mysp.mysptotal(p,c)]
 
-def count_filler(result):
-    filler_count = 0
-    for word in filler_words:
-        if word in result:
-            filler_count += 1
-    return filler_count
+# def count_filler(result):
+#     filler_count = 0
+#     for word in filler_words:
+#         if word in result:
+#             filler_count += 1
+#     return filler_count
 
-# count_filler(result[0])
+if __name__ == '__main__':
+    graph_amplitude('audio/7510.wav')

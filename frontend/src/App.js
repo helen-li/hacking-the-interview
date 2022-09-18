@@ -1,7 +1,9 @@
-import { LaptopOutlined, NotificationOutlined, UserOutlined } from '@ant-design/icons';
-import { Breadcrumb, Layout, Menu, Typography, Card, Button, Space, Progress } from 'antd';
-import React from 'react';
+import './App.css';
+import React, { useEffect, useState } from 'react';
+import axios from "axios";
+import { Breadcrumb, Layout, Menu, Typography, Card, Button, Space, Progress, Table, Divider, Image } from 'antd';
 import "antd/dist/antd.css";
+// import defaultGraph from './imgs/7510.wav.png';
 const { Header, Content, Footer, Sider } = Layout;
 
 const { Title } = Typography;
@@ -31,8 +33,187 @@ const items1 = ['Home', 'Dashboard', 'Logout'].map((key) => ({
   label: `${key}`,
 }));
 
-const App = () => (
-  <Layout>
+const filler_words = ["um", "uh", "hmm", "mhm", "uh huh", "ahh", "like", "you know"]
+
+const countFiller = (str) => {
+  let count = 0;
+  filler_words.forEach((word) => {
+    if(str.includes(word))
+      count += 1;
+  })
+  return count;
+;}
+
+const calcAverage = (lst) => {
+  let sum = 0;
+  let count = 0;
+  lst.forEach((entry) => {
+    sum = sum + entry["confidence"];
+    count = count + 1;
+  })
+  return sum / count;
+}
+
+const calcLoudPercent = (x) => {
+  if(x == 100)
+    return 0;
+  if(20 <= x <= 22)
+    return 50;
+  else if(17 <= x <= 19)
+    return 60;
+  else if(14 <= x <= 16)
+    return 80;
+  else if(9 <= x <= 13)
+    return 100;
+  else if(6 <= x <= 8)
+    return 80;
+  else if(3 <= x <= 5)
+    return 60;
+  else if(0 <= x <= 2)
+    return 50;
+  else
+    return 40;
+}
+
+function App() {
+  const [loudness, setLoudness] = useState(-100);
+  const [pronounce, setPronounce] = useState(0);
+  const [sentiment, setSentiment] = useState(0.0);
+  const [text, setText] = useState("");
+  const [balance, setBalance] = useState(0.0);
+  const [speed, setSpeed] = useState(-1);
+  const [pauses, setPauses] = useState(-1);
+  const [syllables, setSyllables] = useState(-1);
+
+  useEffect(() => {
+    axios.get('/analyze', { 
+      params: { 
+        filename: "audio/7510.wav" 
+      } 
+    })
+    .then((response) => {
+      //console.log(response.data["metric_table"]["articulation_rate"]["0"]);
+      setLoudness(response.data["loudness"]);
+      let index = response.data["pronounce"].indexOf(":");
+      setPronounce(response.data["pronounce"].substring(index+1));
+      setText(response.data["text"]);
+      setSentiment(calcAverage(response.data["sentiment"]));
+      setBalance(parseFloat(response.data["metric_table"]["balance"]["0"]));
+      setSpeed(parseInt(response.data["metric_table"]["articulation_rate"]["0"]));
+      setPauses(parseInt(response.data["metric_table"]["number_of_pauses"]["0"]));
+      setSyllables(parseInt(response.data["metric_table"]["number_ of_syllables"]["0"]));
+    }).catch(error => {
+      console.log(error);
+    });  
+  }, [])
+
+  const columns = [
+    {
+      title: 'Metric',
+      dataIndex: 'metric',
+      key: 'metric',
+    },
+    {
+      title: 'Value',
+      dataIndex: 'value',
+      key: 'value',
+    },
+  ];
+
+  const [clicked, setClicked] = useState(false);
+
+  const handleClick = () => {
+    setClicked(!clicked);
+  };
+
+  const basicDashboard = (<Space direction="vertical" size="middle" style={{ display: 'flex' }}>
+    <Card title="Tell me about yourself."
+      style={{ width: 900 }}
+      actions={[
+        <Button onClick={handleClick}>Start here!</Button>,
+      ]}
+    >
+      <p>Are you ready to talk about yourself during a job interview? Interviewers will sometimes start an interview with an open-ended question like, "Tell me about yourself."
+
+      This question is a way to break the ice and make you feel more comfortable during the interview process. However, some people might find this—and other interview questions about you—slightly stressful.
+
+      If you’re someone who doesn’t like bragging about yourself, these kinds of questions can be difficult to answer. But they’re a good way for the hiring manager to get insight into your personality, so it pays to prepare to answer them. </p>
+    </Card>
+
+    <Card title="Results" style={{ width: 900 }}>
+    <Space direction="vertical" size="large" style={{ display: 'flex' }}>
+      <Space direction="horizontal" size="large" style={{ display: 'flex' }}>
+        <Progress type="dashboard" percent={75} />
+          <div style={{ width: 600 }}>
+            Volume
+            <Progress percent={30}/>
+            Stutter
+            <Progress percent={50}/>
+            Repetitiveness
+            <Progress percent={70}/>
+            Enthusiasm
+            <Progress percent={80} />
+          </div>
+      </Space>
+
+    <Title level={4}>You could work on</Title>
+
+    <Space direction="horizontal" size="large" style={{ display: 'flex' }}/>
+  </Space>
+  </Card>
+  </Space>);
+
+  const resultsDashboard = (<>
+    <Card title="Results"
+      style={{ width: 900 }}
+      actions={[
+        <Button onClick={handleClick}>Go Back!</Button>,
+      ]}
+    >
+      <Space direction="vertical" size="large" style={{ display: 'flex' }}>
+        <Space direction="horizontal" size="large" style={{ display: 'flex' }}>
+          <div style={{ width: 600 }}>
+            Volume 
+            <Progress percent={calcLoudPercent(-1 * loudness)} />
+            Filler Words 
+            <Progress percent={countFiller(text) / (text.split(" ").length)} />
+            Speech Balance 
+            <Progress percent={balance*100} />
+            Pronounciation
+            <Progress percent={pronounce} />
+            Content Sentiment 
+            <Progress percent={sentiment*100}/>
+          </div>
+        </Space>
+        <Divider />
+        <Space direction="horizontal" size="large" style={{ display: 'flex' }}>
+          {/* <Image width={400} src={defaultGraph}/> */}
+          <Progress type="dashboard" percent={75} width={200}/>
+          {(speed != -1 || pauses != -1 || syllables != -1) &&
+            <Table dataSource={[
+              {
+                key: '1',
+                metric: 'Syllables per second of speaking duration',
+                value: speed,
+              },
+              {
+                key: '2',
+                metric: 'Number of pauses',
+                value: pauses,
+              },
+              {
+                key: '3',
+                metric: 'Number of syllables',
+                value: syllables,
+              },
+            ]} columns={columns} />
+          }
+        </Space>
+      </Space>
+    </Card>
+  </>);
+
+  return (<Layout>
     <Header className="header">
       <div className="logo" />
       <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['2']} items={items1} />
@@ -75,143 +256,12 @@ const App = () => (
             minHeight: 280,
           }}
         >
-           <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
-            <Card title="Tell me about yourself."
-    style={{ width: 900 }}
-    actions={[
-      <Button>Start here!</Button>,
-    ]}
-  >
-    <p>Are you ready to talk about yourself during a job interview? Interviewers will sometimes start an interview with an open-ended question like, "Tell me about yourself."
-
-This question is a way to break the ice and make you feel more comfortable during the interview process. However, some people might find this—and other interview questions about you—slightly stressful.
-
-If you’re someone who doesn’t like bragging about yourself, these kinds of questions can be difficult to answer. But they’re a good way for the hiring manager to get insight into your personality, so it pays to prepare to answer them. </p>
-  </Card>
-
-  <Card title="Results"
-    style={{ width: 900 }}
-    actions={[
-      <Button>Start here!</Button>,
-    ]}
-  >
-    <Space direction="vertical" size="large" style={{ display: 'flex' }}>
-        <Space direction="horizontal" size="large" style={{ display: 'flex' }}>
-          <Progress type="dashboard" percent={75} />
-            <div style={{ width: 600 }}>
-              Volume
-              <Progress percent={30}/>
-              Stutter
-              <Progress percent={50}/>
-              Repetitiveness
-              <Progress percent={70}/>
-              Enthusiasm
-              <Progress percent={80} />
-            </div>
-        </Space>
-
-        <Title level={4}>You could work on</Title>
-
-        <Space direction="horizontal" size="large" style={{ display: 'flex' }}>
-
-        </Space>
-     </Space>
-   </Card>
-   </Space>
-         
+          {clicked ? resultsDashboard : basicDashboard}         
         </Content>
       </Layout>
     </Content>
   </Layout>
-);
+  );
+}
 
 export default App;
-
-// import './App.css';
-// import React, { useState } from 'react';
-// import axios from "axios";
-
-// const filler_words = ["um", "uh", "hmm", "mhm", "uh huh", "ahh", "like", "you know"]
-
-// const countFiller = (str) => {
-//   let count = 0;
-//   filler_words.forEach((word) => {
-//     if(str.includes(word))
-//       count += 1;
-//   })
-//   return count;
-// ;}
-
-// function App() {
-//   const [currentText, setCurrentText] = useState('');
-//   // const [pronounciationScore, setPronounciationScore] = useState("0");
-//   // const [loudness, setLoudness] = useState("0");
-//   // const [imagePath, setImagePath] = useState('imgs/white_square.png');
-//   // const [totalAnalysis, setTotalAnalysis] = useState({
-//   //   articulationRate: "", 
-//   //   balance: "",
-//   //   numberOfPauses: "",
-//   //   rateOfSpeech: "",
-//   //   speakingDuration: "", 
-//   // });
-
-//   axios.get('/analyze', { 
-//     params: { 
-//       filename: "audio/7510.wav" 
-//     } 
-//   })
-//   .then((response) => {
-//     setCurrentText(response.data[0]);
-//   }).catch(error => {
-//     console.log(error);
-//   });
-
-//   // axios.get('/voice', { 
-//   //   params: { 
-//   //     filename: "7510" 
-//   //   } 
-//   // })
-//   // .then((response) => {
-//   //   let index = response.data[0].indexOf(":");
-//   //   setPronounciationScore(response.data[0].substring(index+1));
-//   // }).catch(error => {
-//   //   console.log(error);
-//   // });
-
-//   // axios.get('/loudness', { 
-//   //   params: { 
-//   //     filename: "audio/7510.wav" 
-//   //   } 
-//   // })
-//   // .then((response) => {
-//   //   setLoudness(response.data[0])
-//   // }).catch(error => {
-//   //   console.log(error);
-//   // });
-
-//   // axios.get('/amplitude_graph', { 
-//   //   params: { 
-//   //     filename: "audio/7510.wav" 
-//   //   } 
-//   // })
-//   // .then(() => {
-//   //   setImagePath('imgs/7510.wav.png');
-//   //   console.log("Success image creation!")
-//   // }).catch(error => {
-//   //   console.log(error);
-//   // });
-
-//   return (
-//     <div className="App">
-//       <header className="App-header">
-//         <p>The detected text from speech = {currentText}.</p>
-//         <p>The number of filler words used = {countFiller(currentText)}.</p>
-//         {/* <p>Pronounciation Score = {pronounciationScore}.</p> */}
-//         {/* <p>Perceived Loudness Score = {loudness}.</p> */}
-//       </header>
-//       {/* <img src={imagePath} alt={''}/> */}
-//     </div>
-//   );
-// }
-
-// export default App;

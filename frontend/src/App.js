@@ -37,6 +37,7 @@ const items1 = ['Home', 'Dashboard', 'Logout'].map((key) => ({
 const filler_words = ["um", "uh", "hmm", "mhm", "uh huh", "ahh", "like", "you know"]
 
 const countFiller = (str) => {
+  str = str.toLowerCase();
   let count = 0;
   filler_words.forEach((word) => {
     if (str.includes(word))
@@ -97,7 +98,7 @@ function App() {
   useEffect(() => {
     axios.get('/analyze', {
       params: {
-        filename: "audio/7510.wav"
+        filename: "audio/heli.wav"
       }
     })
       .then((response) => {
@@ -106,6 +107,8 @@ function App() {
         let index = response.data["pronounce"].indexOf(":");
         setPronounce(response.data["pronounce"].substring(index + 1));
         setText(response.data["text"]);
+        console.log(response.data["text"]);
+        console.log(response.data["sentiment"]);
         const sentiments = calcAverage(response.data["sentiment"]);
         setPosSentiment(sentiments[0]);
         setNeuSentiment(sentiments[1]);

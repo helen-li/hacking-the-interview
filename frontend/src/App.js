@@ -1,7 +1,7 @@
 import './App.css';
 import React, { useEffect, useState } from 'react';
 import axios from "axios";
-import { Breadcrumb, Layout, Menu, Typography, Card, Button, Space, Progress, Table, Divider, Image } from 'antd';
+import { Breadcrumb, Layout, Menu, Typography, Card, Button, Space, Progress, Table, Divider } from 'antd';
 import "antd/dist/antd.css";
 import recordAudio from './recordAudio';
 // import defaultGraph from './imgs/7510.wav.png';
@@ -10,7 +10,7 @@ const { Header, Content, Footer, Sider } = Layout;
 const { Title } = Typography;
 
 const questions = ["Tell me about yourself.",
-  "Why do you want to work at this company?",
+  "Why do you want to work at this company?"
   , "Why do you want this job?"
   , "Why should we hire you?"
   , "What can you bring to the company?"
@@ -51,9 +51,9 @@ const calcAverage = (lst) => {
   let counts = [0, 0, 0]; 
   lst.forEach((entry) => {
     let index = 1;
-    if(entry["sentiment"] == "POSITIVE")
+    if(entry["sentiment"] === "POSITIVE")
       index = 0;
-    else if(entry["sentiment"] == "NEGATIVE")
+    else if(entry["sentiment"] === "NEGATIVE")
       index = 2;
     sums[index] = sums[index] + entry["confidence"];
     counts[index] = counts[index] + 1;
@@ -62,7 +62,7 @@ const calcAverage = (lst) => {
 }
 
 const calcLoudPercent = (x) => {
-  if (x == 100)
+  if (x === 100)
     return 0;
   if (20 <= x <= 22)
     return 50;
@@ -206,7 +206,7 @@ function App() {
         <Space direction="horizontal" size="large" style={{ display: 'flex' }}>
           {/* <Image width={400} src={defaultGraph}/> */}
           <Progress type="dashboard" percent={75} width={200} />
-          {(speed != -1 || pauses != -1 || syllables != -1) &&
+          {(speed !== -1 || pauses !== -1 || syllables !== -1) &&
             <Table dataSource={[
               {
                 key: '1',
@@ -276,6 +276,7 @@ function App() {
         </Content>
       </Layout>
     </Content>
+    <Footer/>
   </Layout>
   );
 }

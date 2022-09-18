@@ -126,14 +126,14 @@ function App() {
 
   const handleClick = () => {
     setClicked(!clicked);
-    recordAudio();
   };
 
   const basicDashboard = (<Space direction="vertical" size="middle" style={{ display: 'flex' }}>
     <Card title="Tell me about yourself."
       style={{ width: 900 }}
       actions={[
-        <Button onClick={handleClick}>Start here!</Button>,
+        <Button onClick={recordAudio}>Start here!</Button>,
+        <Button onClick={handleClick}>Analyze!</Button>,
       ]}
     >
       <p>Are you ready to talk about yourself during a job interview? Interviewers will sometimes start an interview with an open-ended question like, "Tell me about yourself."
@@ -159,7 +159,7 @@ function App() {
           </div>
         </Space>
 
-        <Title level={4}>You could work on</Title>
+        <Title level={4}>You could work on...</Title>
 
         <Space direction="horizontal" size="large" style={{ display: 'flex' }} />
       </Space>
@@ -255,8 +255,7 @@ function App() {
         <Content
           style={{
             padding: '0 24px',
-            marginBottom: '24px',
-            minHeight: 280,
+            height: "100%"
           }}
         >
           {clicked ? resultsDashboard : basicDashboard}

@@ -2,4 +2,5 @@ backend/.flaskenv
 backend/.ipynb_checkpoints/
 backend/__pycache__/
 backend/venv/
+backend/env/
 frontend/package-lock.json 

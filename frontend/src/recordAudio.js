@@ -13,8 +13,6 @@ export default function recordAudio() {
     //main block for doing the audio recording
 
     if (navigator.mediaDevices.getUserMedia) {
-        console.log('getUserMedia supported.');
-
         const constraints = { audio: true };
         let chunks = [];
 
@@ -52,6 +50,7 @@ export default function recordAudio() {
             mediaRecorder.ondataavailable = function (e) {
                 chunks.push(e.data);
             }
+            mediaRecorder.start()
         }
 
         let onError = function (err) {
@@ -60,7 +59,10 @@ export default function recordAudio() {
 
         navigator.mediaDevices.getUserMedia(constraints).then(onSuccess, onError);
         return (
-            mediaRecorder.start()
+            navigator.mediaDevices.getUserMedia({
+                audio: true,
+                video: false
+            })
         );
 
     } else {

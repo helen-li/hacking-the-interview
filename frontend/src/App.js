@@ -80,7 +80,7 @@ const App = () => (
             <Card title="Tell me about yourself."
               style={{ width: 900 }}
               actions={[
-                <Button onClick="recordAudio()">Start here!</Button>,
+                <Button onClick={recordAudio}>Start here!</Button>,
               ]}
             >
               <p>Are you ready to talk about yourself during a job interview? Interviewers will sometimes start an interview with an open-ended question like, "Tell me about yourself."
